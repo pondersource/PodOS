@@ -1,0 +1,73 @@
+name: Ponder Source PodOS Browser build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'pondersource/PodOS'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/package-lock.json
+      - run: npm ci
+      - run: npm run build --workspace=core
+      - run: npm run build --workspace=elements
+      - run: npm run build:bundle --workspace=service-worker
+      - name: Stage a standalone app
+        env:
+          POD_OS_ELEMENTS_ASSET_BASE: ./elements
+          POD_OS_STATIC_CACHE_PREFIX: ./elements/
+          POD_OS_SERVICE_WORKER_URL: ./podos-service-worker.js
+          POD_OS_CACHE_VERSION: ${{ github.sha }}
+        run: |
+          make -C apps pos-app-browser
+          output=apps/dist/pos-app-browser
+          cp -R elements/dist/elements "$output/elements"
+          cp service-worker/lib/index.js "$output/podos-service-worker.js"
+          cp LICENSE "$output/"
+          git rev-parse HEAD > "$output/revision.txt"
+      - run: npm ci
+        working-directory: apps
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps
+      - run: npm test -- --project=chromium
+        working-directory: apps
+      - uses: actions/upload-artifact@v4
+        with:
+          name: podos-browser
+          path: apps/dist/pos-app-browser
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name == 'push'
+        with:
+          path: apps/dist/pos-app-browser
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - uses: actions/deploy-pages@v4
+        id: deployment

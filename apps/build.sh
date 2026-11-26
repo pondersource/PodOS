@@ -3,6 +3,10 @@
 set -e
 
 export POD_OS_ELEMENTS_VERSION=${POD_OS_ELEMENTS_VERSION:-latest}
+export POD_OS_ELEMENTS_ASSET_BASE=${POD_OS_ELEMENTS_ASSET_BASE:-https://cdn.jsdelivr.net/npm/@pod-os/elements@${POD_OS_ELEMENTS_VERSION}/dist/elements}
+export POD_OS_SERVICE_WORKER_URL=${POD_OS_SERVICE_WORKER_URL:-https://cdn.jsdelivr.net/npm/@pod-os/service-worker@0.1.1/lib/index.js}
+export POD_OS_STATIC_CACHE_PREFIX=${POD_OS_STATIC_CACHE_PREFIX:-https://cdn.jsdelivr.net/npm/@pod-os/}
+export POD_OS_CACHE_VERSION=${POD_OS_CACHE_VERSION:-${POD_OS_ELEMENTS_VERSION}}
 export POD_OS_APP_NAME=${1:-pos-app-browser}
 
 echo "Building ${POD_OS_APP_NAME} with elements version ${POD_OS_ELEMENTS_VERSION}"

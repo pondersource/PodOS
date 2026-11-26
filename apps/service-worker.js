@@ -1,11 +1,11 @@
 importScripts(
-  "https://cdn.jsdelivr.net/npm/@pod-os/service-worker@0.1.1/lib/index.js",
+  "${POD_OS_SERVICE_WORKER_URL}",
 );
 
-const CACHE_NAME = "pod-os-static-${POD_OS_ELEMENTS_VERSION}";
-const CDN_URL_PATTERN = "https://cdn.jsdelivr.net/npm/@pod-os/";
+const CACHE_NAME = "pod-os-static-${POD_OS_CACHE_VERSION}";
+const STATIC_ASSET_URL_PREFIX = new URL("${POD_OS_STATIC_CACHE_PREFIX}", self.location.href).href;
 
-PodOsServiceWorker.setupServiceWorker(self, CACHE_NAME, CDN_URL_PATTERN, [
+PodOsServiceWorker.setupServiceWorker(self, CACHE_NAME, STATIC_ASSET_URL_PREFIX, [
   "/",
   "./index.html",
 ]);
