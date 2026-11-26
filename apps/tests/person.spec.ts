@@ -12,6 +12,6 @@ test("show name as heading for a person", async ({ page, navigationBar }) => {
   );
 
   // then the heading shows Alice's name as heading
-  const label = await page.getByRole("heading");
+  const label = page.getByRole("heading", { name: "Alice", exact: true });
   await expect(label).toHaveText("Alice");
 });

@@ -14,7 +14,7 @@ export class GenericThingPage {
   }
 
   heading(): Locator {
-    return this.page.getByRole("heading").describe("Heading");
+    return this.page.getByRole("heading", { name: this.thingName, exact: true }).describe("Heading");
   }
 
   overview(): Locator {

@@ -19,10 +19,18 @@ test("can access cached resources while offline", async ({
     "Requires the built app bundle, which includes the service worker.",
   );
   await test.step("given the user has enabled offline cache", async () => {
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem("settings", JSON.stringify({ offlineCache: true }));
+    await page.addInitScript(() => {
+      const settings = JSON.parse(localStorage.getItem("settings") ?? "{}");
+      localStorage.setItem("settings", JSON.stringify({ ...settings, offlineCache: true }));
     });
+    await page.goto("/");
+    await page.evaluate(async () => {
+      await navigator.serviceWorker.ready;
+    });
+    // The first load registers the worker. The reload lets it cache the app
+    // assets and serve the later offline navigation.
+    await page.reload();
+    await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
   });
 
   const somethingPage =
@@ -38,6 +46,7 @@ test("can access cached resources while offline", async ({
 
   await test.step("and the user has returned to the home page", async () => {
     await page.goto("/");
+    await expect(page.getByRole("button", { name: "Search or enter URI" })).toBeVisible();
   });
 
   await test.step("when the user goes offline", async () => {
