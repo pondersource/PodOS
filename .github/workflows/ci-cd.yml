@@ -52,7 +52,7 @@ jobs:
           retention-days: 1
 
   npm-publish-core-snapshot:
-    if: github.ref == 'refs/heads/main'
+    if: github.repository == 'pod-os/PodOS' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
